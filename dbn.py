@@ -43,8 +43,8 @@ def make_data(N):
     index = random.sample(range(mnist.target.shape[0]), (mnist.target.shape[0]))
     tmp_target = [mnist_target[i] for i in index]
     tmp_data = [mnist.data[i] for i in index]
-    print("N : ", len(tmp_target))
-    print("tmp_target : ", tmp_target)
+    # print("N : ", len(tmp_target))
+    # print("tmp_target : ", tmp_target)
 
     x_train, x_test = np.split(tmp_data, [N])
     y_train, y_test = np.split(tmp_target, [N])
@@ -419,22 +419,44 @@ def test_dbn(pretrain_lr=0.1, pretraining_epochs=1000, k=1, \
     x = numpy.array([1, 1, 0, 0, 0, 0])
     print(dbn.predict(x))
 
+def check_test(list_predict, list_y):
+    cnt = 0
+    for predict, y in zip(list_predict, list_y):
+        print(predict, " : ", y)
+        print("max predict : y_train :", np.argmax(predict), " , ", np.argmax(y))
+
+        if np.argmax(predict) == np.argmax(y):
+            cnt += 1
+    print("success rate : ", cnt/len(list_y))
+
+    return True
+
 
 if __name__ == "__main__":
-    N = 3000
-    pretrain_lr=0.1
+    N = 65000 
+    pretrain_lr=0.005
     pretraining_epochs = 200
-    finetune_lr = 0.1
+    finetune_lr = 0.001
     finetune_epochs = 100
 
     x_train, x_test, y_train, y_test = make_data(N)
 
     rng = np.random.RandomState(123)
 
-    dbn = DBN(input=x_train, label=y_train, n_ins=784, hidden_layer_sizes=[1000,500,250,30], n_outs=10, numpy_rng=rng)
+    #dbn = DBN(input=x_train, label=y_train, n_ins=784, hidden_layer_sizes=[1000,500,250,30], n_outs=10, numpy_rng=rng)
+    dbn = DBN(input=x_train, label=y_train, n_ins=784, hidden_layer_sizes=[1000], n_outs=10, numpy_rng=rng)
+    #dbn = DBN(input=x_train, label=y_train, n_ins=784, hidden_layer_sizes=[1000], n_outs=10, numpy_rng=rng)
     dbn.pretrain(lr=pretrain_lr, k=1, epochs=pretraining_epochs)
     dbn.finetune(lr=finetune_lr, epochs=finetune_epochs)
 
+    check_test(dbn.predict(x_test[:100]), y_test[:100])
     # print(dbn.predict(x_train), " : ")
-    for predict, y in zip(dbn.predict(x_train), y_train):
-        print(predict, " : ", y)
+    # cnt = 0
+    # for predict, y in zip(dbn.predict(x_train), y_train):
+    #     print(predict, " : ", y)
+    #     print("max predict : y_train :", np.argmax(predict), " , ", np.argmax(y))
+
+    #     if np.argmax(predict) == np.argmax(y):
+    #         cnt += 1
+
+    # print("success rate : ", cnt/len(y_train))
